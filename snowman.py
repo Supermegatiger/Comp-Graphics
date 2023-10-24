@@ -4,7 +4,14 @@ from OpenGL.GLU import *
 from math import *
 
 WIDTH,HEIGHT = 900,600
+fovy = 120
+#######################################
+# push p to switch view (perspective) #
+# click + to zoom in in p. mode       #
+# click - to zoom out in p. mode      #
+#######################################
 
+p = False
 rotate_y = 0
 rotate_x = 0
 cube = [(-0.5, -0.5, -0.5), (-0.5, 0.5, -0.5), (0.5, 0.5, -0.5), (0.5, -0.5, -0.5), 's', (0.5, -0.5, 0.5), (0.5, 0.5, 0.5), (-0.5, 0.5, 0.5), (-0.5, -0.5, 0.5), 's', (0.5, -0.5, -0.5), (0.5, 0.5, -0.5), (0.5, 0.5, 0.5), (0.5, -0.5, 0.5), 's', (-0.5, -0.5, 0.5), (-0.5, 0.5, 0.5), (-0.5, 0.5, -0.5), (-0.5, -0.5, -0.5), 's', (0.5, 0.5, 0.5), (0.5, 0.5, -0.5), (-0.5, 0.5, -0.5), (-0.5, 0.5, 0.5), 's', (0.5, -0.5, -0.5), (0.5, -0.5, 0.5), (-0.5, -0.5, 0.5), (-0.5, -0.5, -0.5)]
@@ -24,7 +31,7 @@ def drawCube(k,y0,mode):
     if mode == GL_POLYGON:
         glColor3f(1,1,1)
     else:
-        glColor3f(0,0,0)
+        glColor3f(0.8,0.8,0.8)
     glBegin(mode)
     for i in cube:
         if i == 's':
@@ -42,17 +49,18 @@ def display():
     # reset transformations
     glLoadIdentity()
 
-    # setting perspective view 
-    # view angle is 120 degrees, but may be less
-    gluPerspective(120, WIDTH/HEIGHT, 0.0001, 100)
-    glTranslatef(0,0,-1) # moving away from the object
-    glRotatef(180,0,1,0) # to front side 
-    # end of setting 
+    if p:
+        # setting perspective view 
+        # fovy (view angle) is 120 degrees here, but may be less
+        gluPerspective(fovy, WIDTH/HEIGHT, 0.0001, 100)
+        glTranslatef(0,0,-1) # moving away from the object
+        glRotatef(180,0,1,0) # to front side 
+        # end of setting 
 
 
     # rotate when user changes rotate_x and rotate_y
     glRotatef(rotate_x, 1.0, 0.0, 0.0)
-    glRotatef(rotate_y, 0.0, 1.0, 0.0)
+    glRotatef(rotate_y*(-1)**p, 0.0, 1.0, 0.0)
 
     # bottom cube
     drawCube(0.5,-0.3,GL_LINE_LOOP)
@@ -97,6 +105,17 @@ def specialKeys(key, x, y):
 
     glutPostRedisplay()
 
+
+def keyboard(key, x, y):
+    global p,fovy
+    if key == b'p':
+        p = not p
+    elif key == b'+':
+        fovy -= 10
+    elif key == b'-':
+        fovy += 10
+    glutPostRedisplay()
+
 def resize(w,h):
     global WIDTH,HEIGHT
     WIDTH = w
@@ -117,6 +136,7 @@ def main():
     glutDisplayFunc(display)
     glutReshapeFunc(resize)
     glutSpecialFunc(specialKeys)
+    glutKeyboardFunc(keyboard)
 
     glutMainLoop()
 
